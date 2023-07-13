@@ -3,24 +3,11 @@
     windows_subsystem = "windows"
 )]
 
-use std::time::{SystemTime, UNIX_EPOCH};
 use std::env;
-
-#[tauri::command]
-fn on_button_clicked() -> String {
-    let start = SystemTime::now();
-    let since_the_epoch = start
-        .duration_since(UNIX_EPOCH)
-        .expect("Time went backwards")
-        .as_millis();
-    format!("on_button_clicked called from Rust! (timestamp: {since_the_epoch}ms)")
-}
+use tauri::Manager;
 
 // 扫描home目录下的所有包含.git的目录
-
-
-#[tauri::command]
-fn scan_directory() -> Vec<String> {
+async fn scan_directory() -> Vec<String> {
     let path = std::env::var("HOME").unwrap_or_else(|_| "".into());
     let mut result = Vec::new();
     for entry in walkdir::WalkDir::new(&path) {
@@ -44,11 +31,17 @@ fn scan_directory() -> Vec<String> {
     result
 }
 
-
+#[tauri::command]
+async fn get_scan_directory(window: tauri::Window) {
+  let result = scan_directory().await;
+  // log
+    println!("scan result: {:?}", result);
+  window.emit("scan_result", Some(result)).unwrap();
+}
 
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![on_button_clicked, scan_directory])
+        .invoke_handler(tauri::generate_handler![get_scan_directory])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

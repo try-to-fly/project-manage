@@ -1,3 +1,4 @@
+import { listen, once } from "@tauri-apps/api/event"
 import { invoke } from "@tauri-apps/api/tauri"
 import type { NextPage } from "next"
 import { useState } from "react"
@@ -7,11 +8,16 @@ const Home: NextPage = () => {
   const [loading, setLoading] = useState(false)
 
   const onButtonClick = () => {
+    console.log("click")
     setLoading(true) // 设置loading为true
 
-    invoke<string[]>("scan_directory")
+    void once<string[]>("scan_result", (event) => {
+      setList(event.payload)
+    })
+
+    invoke<string[]>("get_scan_directory")
       .then((value) => {
-        setList(value)
+        console.log(value)
       })
       .catch((err) => {
         console.error(err)
