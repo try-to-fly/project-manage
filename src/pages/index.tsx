@@ -1,32 +1,32 @@
-import { listen } from "@tauri-apps/api/event"
-import { invoke } from "@tauri-apps/api/tauri"
-import type { NextPage } from "next"
-import { useState } from "react"
+import { listen } from "@tauri-apps/api/event";
+import { invoke } from "@tauri-apps/api/tauri";
+import type { NextPage } from "next";
+import { useState } from "react";
 
 const Home: NextPage = () => {
-  const [list, setList] = useState<string[]>([])
-  const [loading, setLoading] = useState(false)
+  const [list, setList] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const onButtonClick = async () => {
-    console.log("click")
-    setLoading(true) // 设置loading为true
+    console.log("click");
+    setLoading(true); // 设置loading为true
 
     const unlisten = await listen<string>("scan_result", (event) => {
-      setList((list) => [event.payload, ...list])
-    })
+      setList((list) => [event.payload, ...list]);
+    });
 
     invoke<string[]>("get_scan_directory")
       .then((value) => {
-        console.log(value)
+        console.log(value);
       })
       .catch((err) => {
-        console.error(err)
+        console.error(err);
       })
       .finally(() => {
-        setLoading(false) // 请求完成后，设置loading为false
-        unlisten()
-      })
-  }
+        setLoading(false); // 请求完成后，设置loading为false
+        unlisten();
+      });
+  };
 
   return (
     <div className="flex min-h-screen flex-col bg-white">
@@ -50,11 +50,11 @@ const Home: NextPage = () => {
             >
               <span className="text-gray-800">{item}</span>
             </li>
-          )
+          );
         })}
       </ul>
     </div>
-  )
-}
+  );
+};
 
-export default Home
+export default Home;
