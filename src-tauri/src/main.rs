@@ -6,10 +6,9 @@
 use std::env;
 use tauri::Manager;
 
-// 扫描home目录下的所有包含.git的目录
-async fn scan_directory() -> Vec<String> {
+async fn scan_directory(window: &tauri::Window) {
     let path = std::env::var("HOME").unwrap_or_else(|_| "".into());
-    let mut result = Vec::new();
+
     for entry in walkdir::WalkDir::new(&path) {
         match entry {
             Ok(entry) => {
@@ -17,26 +16,24 @@ async fn scan_directory() -> Vec<String> {
                 if path.ends_with(".git") {
                     if let Some(parent_path) = path.parent() {
                         if let Some(parent_path_str) = parent_path.to_str() {
-                            result.push(parent_path_str.to_owned());
+                            // Emit each scanned path
+                            window.emit("scan_result", Some(parent_path_str.to_owned())).unwrap();
                         }
                     }
                 }
             },
-            Err(_err) => {
-                // 如果出现错误，我们只是打印一个警告，而不是让整个程序崩溃
-                eprintln!("Warning: could not access a path");
+            Err(err) => {
+                // Log the specific file path in case of an access error
+                eprintln!("Warning: could not access path: {}, error: {}", err.path().unwrap_or(&std::path::PathBuf::new()).display(), err);
             }
         }
     }
-    result
 }
 
 #[tauri::command]
 async fn get_scan_directory(window: tauri::Window) {
-  let result = scan_directory().await;
-  // log
-    println!("scan result: {:?}", result);
-  window.emit("scan_result", Some(result)).unwrap();
+    // Invoke the scan_directory function with the window object.
+    scan_directory(&window).await;
 }
 
 fn main() {

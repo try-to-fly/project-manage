@@ -1,4 +1,4 @@
-import { listen, once } from "@tauri-apps/api/event"
+import { listen } from "@tauri-apps/api/event"
 import { invoke } from "@tauri-apps/api/tauri"
 import type { NextPage } from "next"
 import { useState } from "react"
@@ -7,12 +7,12 @@ const Home: NextPage = () => {
   const [list, setList] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
 
-  const onButtonClick = () => {
+  const onButtonClick = async () => {
     console.log("click")
     setLoading(true) // 设置loading为true
 
-    void once<string[]>("scan_result", (event) => {
-      setList(event.payload)
+    const unlisten = await listen<string>("scan_result", (event) => {
+      setList((list) => [event.payload, ...list])
     })
 
     invoke<string[]>("get_scan_directory")
@@ -24,13 +24,15 @@ const Home: NextPage = () => {
       })
       .finally(() => {
         setLoading(false) // 请求完成后，设置loading为false
+        unlisten()
       })
   }
 
   return (
     <div className="flex min-h-screen flex-col bg-white">
       <button
-        onClick={onButtonClick}
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
+        onClick={() => onButtonClick()}
         className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ${
           loading ? "opacity-50 cursor-not-allowed" : ""
         }`}
