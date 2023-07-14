@@ -23,12 +23,24 @@ jobs:
         with:
           toolchain: stable
           override: true
-
+      
+      - name: Cache Rust Cargo
+        uses: actions/cache@v2
+        with:
+          path: ~/.cargo/registry
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      
       - name: Install Node.js
         uses: actions/setup-node@v2
         with:
           node-version: '18.16.1'
-      
+
+      - name: Cache Node Modules
+        uses: actions/cache@v2
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
+
       - name: Install Dependencies
         run: |
           yarn install
