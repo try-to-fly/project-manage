@@ -2,6 +2,7 @@ import { listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/tauri";
 import { useEffect, useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import { PathConfig, pathStore } from "@/utils/store";
 import { toast } from "@/utils/toast";
 
@@ -53,16 +54,13 @@ export const ScanDir = () => {
 
   return (
     <div className="flex min-h-screen flex-col bg-white flex-grow m-2 ">
-      <button
+      <Button
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         onClick={() => onButtonClick()}
-        className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ${
-          loading ? "opacity-50 cursor-not-allowed" : ""
-        }`}
         disabled={loading} // 当loading为true时禁用按钮
       >
         {loading ? "加载中..." : "扫描"}
-      </button>
+      </Button>
 
       <ul className="mt-4 space-y-2">
         {list
